@@ -1,0 +1,19 @@
+# Copy to application-local.yml (gitignored) and activate profile "local" in IDEA.
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:postgresql://localhost:5432/metrics_learn
+    username: postgres
+    password: your-password
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
