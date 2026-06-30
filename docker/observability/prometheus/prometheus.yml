@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: metrics-learn-local
+
+scrape_configs:
+  - job_name: metrics-learn
+    metrics_path: /actuator/prometheus
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    static_configs:
+      - targets:
+          # WSL 默认网关 = Windows 主机（本机已验证 192.168.16.1；其他环境用 ip route 获取）
+          - 192.168.16.1:8080
+        labels:
+          env: local
+          service: metrics-learn-app

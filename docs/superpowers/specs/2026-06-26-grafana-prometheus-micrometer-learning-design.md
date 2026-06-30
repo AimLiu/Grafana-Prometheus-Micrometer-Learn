@@ -89,11 +89,13 @@ flowchart TB
 |----|-----|------|
 | Spring Boot（Windows） | PostgreSQL | `jdbc:postgresql://localhost:5432/metrics_learn` |
 | Spring Boot（Windows） | Redis | `localhost:6379` |
-| Prometheus（WSL 容器） | Spring Boot | `host.docker.internal:8080` |
+| Prometheus（WSL 容器） | Spring Boot | `192.168.16.1:8080`（WSL 默认网关，即 Windows 主机；以 `ip route` 为准） |
 | Grafana（WSL 容器） | Prometheus | `http://prometheus:9090`（Compose 内网） |
 | 浏览器（Windows） | Prometheus / Grafana | `http://localhost:9090` / `http://localhost:3000` |
 
-**备选：** 若 `host.docker.internal` 不可用，改用 Windows 主机局域网 IP，或在 `docker-compose.yml` 中配置 `extra_hosts`。
+**首选：** WSL 中 `ip route show | awk '/default/ {print $3}'` 得到网关 IP（本机示例 `192.168.16.1`），写入 `prometheus.yml` targets。
+
+**备选：** 若 `host.docker.internal` 可用，亦可作 target；或在 `docker-compose.yml` 中配置 `extra_hosts`。
 
 ### 3.2 指标链路
 
@@ -220,7 +222,7 @@ Grafana-Prometheus-Micrometer-Learn/
 **动手**
 
 - `docker compose up` 启动 Prometheus
-- 配置 scrape 指向 `host.docker.internal:8080`
+- 配置 scrape 指向 WSL 网关 IP（本机示例 `192.168.16.1:8080`）
 - Prometheus UI → Status → Targets 显示 UP
 
 **验收**
@@ -493,7 +495,8 @@ scrape_configs:
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
-          - host.docker.internal:8080
+          # WSL 默认网关 = Windows 主机（示例 IP；以本机 ip route 为准，如 192.168.16.1）
+          - 192.168.16.1:8080
         labels:
           env: local
 ```
@@ -525,7 +528,7 @@ scrape_configs:
 | 现象 | 可能原因 | 处理 |
 |------|----------|------|
 | Prometheus Target DOWN | 应用未启动或地址错误 | Windows 上 `curl http://localhost:8080/actuator/prometheus` |
-| `host.docker.internal` 不通 | WSL/Windows 网络差异 | 改用 Windows 局域网 IP 或 `extra_hosts` |
+| WSL 无法 curl Windows 上的 8080 | 防火墙 / 应用绑死 127.0.0.1 | 放行 8080；用 `ip route` 获取网关 IP 写入 targets |
 | Grafana 无数据 | 数据源或时间范围 | 先在 Prometheus UI 验证；Grafana 选 Last 15 minutes |
 | 无 `hikaricp_*` | 未配 DataSource 或未访问 DB | 确认 `local` profile；调用 DB 接口 |
 | 无 `lettuce_*` | 未配 Redis 或未调用 | 确认 Redis 连接；调用缓存接口 |

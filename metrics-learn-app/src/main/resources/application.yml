@@ -19,3 +19,11 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+      environment: ${METRICS_ENVIRONMENT:local}
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
