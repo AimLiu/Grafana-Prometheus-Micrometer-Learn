@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://192.168.19.64:5432/metrics_learn
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      pool-name: metrics-learn-pool
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  data:
+    redis:
+      host: 192.168.19.64
+      port: 6379
+      database: 1
